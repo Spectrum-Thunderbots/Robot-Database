@@ -30,6 +30,7 @@ Put the gamepad inputs you want in the method corresponding to the direction you
 fieldRelativeDrive(double forward, double sideways, double turn)
 This is an upgraded movement code for Mechnum that makes it based off of the field rather than the direction the robot is facing
 Put the gamepad inputs you want in the method corresponding to the direction you want robot to move.
+The imu must be set up properly beforehane (if not using comment out the imu initilization).
 
 driveTelemetry()
 Provides feedback of the power being applied to the drive motors.
