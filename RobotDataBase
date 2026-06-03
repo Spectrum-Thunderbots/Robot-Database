@@ -1,3 +1,5 @@
+//https://github.com/Spectrum-Thunderbots
+
 package org.firstinspires.ftc.teamcode.Offseason;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -5,10 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
 import java.util.Locale;
@@ -30,10 +30,10 @@ public class RobotDataBase {
     DcMotor linearslidemotor = null;
     Servo claw = null;
     Servo wrist = null;
-    IMU imu = null;
 
+    //marcsus was here
     //initializes the code to be accessed by another program
-    //I would recommend NOT CHANGING THIS
+    //I would recommend NOT CHANGING THIS (EVER)
     public RobotDataBase(OpMode opMode){
         if (opMode == null) throw new IllegalArgumentException("opMode cannot be null");
         hardwareMap = opMode.hardwareMap;
@@ -44,10 +44,10 @@ public class RobotDataBase {
 
     //method to be called to initialize all motors
     public void init() {
-        flMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
-        frMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
-        blMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
-        brMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
+        flMotor = hardwareMap.get(DcMotor.class, "flMotor1");
+        frMotor = hardwareMap.get(DcMotor.class, "flMotor2");
+        blMotor = hardwareMap.get(DcMotor.class, "flMotor3");
+        brMotor = hardwareMap.get(DcMotor.class, "flMotor4");
 
         Shooter = hardwareMap.get(DcMotorEx.class, "Shooter");
 
@@ -55,22 +55,18 @@ public class RobotDataBase {
         claw = hardwareMap.get(Servo.class, "claw");
         wrist = hardwareMap.get(Servo.class, "wrist");
 
-        imu = hardwareMap.get(IMU.class, "imu");
-
         flMotor.setDirection(DcMotor.Direction.FORWARD);
         frMotor.setDirection(DcMotor.Direction.REVERSE);
         blMotor.setDirection(DcMotor.Direction.FORWARD);
         brMotor.setDirection(DcMotor.Direction.REVERSE);
 
-
-        //use this to have all motors brake (resist motion) or float (slowly wind down) when you stop pressing the button
-        flMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        blMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        brMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        //Have your control hub's distances forward and sideways from the center of robot, as well as what diretion the logo faces (both upwards and forwars axies)
-        imu.initialize(Insert Your Rev Offesets Here);
+        /*
+        use this to have all motors brake (resist motion) or float (slowly wind down) when you stop pressing the button
+        flMotor.ZeroPowerBehavior;
+        frMotor.ZeroPowerBehavior;
+        blMotor.ZeroPowerBehavior;
+        brMotor.ZeroPowerBehavior;
+        */
     }
 
     //makes the response times of motors and servos more accurate and faster
@@ -78,8 +74,8 @@ public class RobotDataBase {
     //good values change but find a good up to speed (P) and the do F to stop oscillation
     public double PFTUNER(double wantedValue, double currentValue, double P, double F) {
         double error = wantedValue - currentValue;
-        double errorfin = (P * error) + (F * wantedValue);
-        return errorfin;
+        \
+        return (P * error) + (F * wantedValue);
     }
 
     //method to set values to a max or min if greater than or less than
@@ -91,6 +87,7 @@ public class RobotDataBase {
         }
         return value;
     }
+
     //movement code
     //have the wanted inputs on the joystick correspond to movement direction
     public void MechanumMoving(double forward, double sideways, double turn){
@@ -99,13 +96,10 @@ public class RobotDataBase {
         double blpower = forward - sideways + turn;
         double brpower = forward + sideways - turn;
 
-        String inputs = String.format(Locale.US, "{F: %.3f, S: %.3f, T: %.3f}", forward, sideways, turn);
-        telemetry.addData("controller", inputs);
-
-        rangeCheck(flpower, -1.0, 1.0);
-        rangeCheck(frpower, -1.0, 1.0);
-        rangeCheck(blpower, -1.0, 1.0);
-        rangeCheck(brpower, -1.0, 1.0);
+        flpower = rangeCheck(flpower, -1.0, 1.0);
+        frpower = rangeCheck(frpower, -1.0, 1.0);
+        blpower = rangeCheck(blpower, -1.0, 1.0);
+        brpower =rangeCheck(brpower, -1.0, 1.0);
 
         flMotor.setPower(flpower);
         frMotor.setPower(frpower);
@@ -113,49 +107,42 @@ public class RobotDataBase {
         brMotor.setPower(brpower);
     }
 
-    public void driveFieldRelative(double forward, double sideways, double turn) {
-        double theta = Math.atan2(forward, sideways);
-        double r = Math.hypot(sideways, forward);
-
-        theta = AngleUnit.normalizeRadians(theta -
-                imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-
-        double newForward = r * Math.sin(theta);
-        double newRight = r * Math.cos(theta);
-
-        MechanumMoving(newForward, newRight, turn);
-    }
-
     //displays drive motor values on driver station
     public void driveTelemetry(){
-        String drive = String.format(Locale.US, "{FL: %.3f, FR: %.3f, BL: %.3f, BR: %.3f}", flMotor.getPower(), frMotor.getPower(), blMotor.getPower(), blMotor.getPower());
+        String drive = String.format(Locale.US, "{FL: %.3f, FR: %.3f, BL: %.3f, BR: %.3f}", flMotor.getPower(), frMotor.getPower(), blMotor.getPower(), brMotor.getPower());
         telemetry.addData("Drive:", drive);
     }
 
     //have all values regardless of needed otherwise crash
     //controls linear slide and claw / wrist
-    //move = stick input, the booleans are buttonWasPressed, Pos are set values.
-    public void LinearSlideMovement(double move, boolean clawOn, int clawPos, boolean wristOn, int wristPos){
-        linearslidemotor.setPower(move);
-        if(clawOn == true) {
-            claw.setPosition(clawPos);
-        }
-        if (wristOn == true) {
-            wrist.setPosition(wristPos);
-        }
+    public void LinearSlideMovementUp(double input1,int claw1,int claw2){
+        linearslidemotor.setPower(Math.abs(input1));
+        claw.setPosition(Math.abs(claw1));
+        wrist.setPosition(Math.abs(claw2));
+    }
+    //have all values regardless of needed otherwise crash
+    //controls linear slide and claw / wrist
+    public void LinearSlideMovementDown(double input1,int claw1,int claw2){
+        linearslidemotor.setPower(-Math.abs(input1));
+        claw.setPosition(-Math.abs(claw1));
+        wrist.setPosition(-Math.abs(claw2));
     }
 
     //FLY method to be used to have fly wheel turn at wanted speed
     //change the active boolean to turn on and off and (if wanted) have a wanted speed
     //double at the top of the code to edit easier
     public void fly(boolean active){
+    if (!active){
+Shooter.setPower(0);
+return;
+    }
         double currentSpeed = Shooter.getVelocity();
-        double wantedSpeed = 1500; //Your Speed Here
+        double wantedSpeed = 0; //Your Speed Here
 
         double P = 0.000365; //change
         double F = 0.000424; //change
 
-        double targetPower = active ? PFTUNER(wantedSpeed, currentSpeed, P, F) : 0; //remove pf terms and just write values in method
+        double targetPower = PFTUNER(wantedSpeed, currentSpeed, P, F); //remove pf terms and just write values in method
 
         Shooter.setPower(targetPower);
     }
@@ -165,9 +152,19 @@ public class RobotDataBase {
     //put method in initialization to set the above global boolean
     //have a different button was pressed for each input
     public void setAlliance(boolean redInput, boolean blueInput){
-        while (!(redInput || blueInput)) {}
+        while (!(redInput || blueInput)) {} //waits until you do an input
         if (redInput == true) REDAlliance = true;
         else if (blueInput == true) REDAlliance = false;
     }
 
 }
+
+
+public double ColourSensor(){
+    double red = 0;
+    double green = 0;
+    double blue = 0;
+    return red,green,blue;
+}
+
+
