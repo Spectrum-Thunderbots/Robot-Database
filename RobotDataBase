@@ -163,12 +163,17 @@ public class RobotDataBase {
     // Put method in initialization to set the above global boolean
     // Have a different button was pressed for each input
     public void setAlliance(boolean redInput, boolean blueInput){
-        while (!(redInput || blueInput)) {} //waits until you do an input
-        if (redInput == true) REDAlliance = true;
-        else if (blueInput == true) REDAlliance = false;
+        if (redInput) REDAlliance = true;
+        else if (blueInput) REDAlliance = false;
     }
 
+    public LinearOpMode getLinearOpMode() {
+        return linearOpMode;
+    }
+
+    public void setLinearOpMode(LinearOpMode linearOpMode) {
+        this.linearOpMode = linearOpMode;
+    }
 }
 
-
-
+// so many errors - justin
